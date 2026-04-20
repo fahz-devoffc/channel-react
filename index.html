@@ -1,1 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Channel React</title>
 
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<style>
+body {
+  margin:0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+}
+
+.container {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 20px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+}
+
+h1 { text-align:center; }
+
+input {
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border:none;
+  border-radius:8px;
+}
+
+button {
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  background:#22c55e;
+  color:white;
+  cursor:pointer;
+}
+
+.status {
+  text-align:center;
+  margin-bottom:10px;
+}
+
+.online { color:#22c55e; }
+.offline { color:#ef4444; }
+
+.history {
+  margin-top:20px;
+  max-height:150px;
+  overflow:auto;
+  font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>Channel React</h1>
+
+<div id="status" class="status"></div>
+
+<input id="link" placeholder="Link Channel WhatsApp">
+<input id="emoji" placeholder="Emoji (pisahkan koma)">
+<button onclick="kirim()">Kirim</button>
+
+<div id="loading"></div>
+<div id="confirm"></div>
+
+<div class="history">
+<h3>History Kamu</h3>
+<div id="history"></div>
+</div>
+
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAJodnkdF_FiJ3bdUE2Jhpd91W6AnZ5KbI",
+  authDomain: "chan-react.firebaseapp.com",
+  databaseURL: "https://chan-react-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "chan-react",
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// STATUS ADMIN
+function cekStatus(){
+  let jam = new Date().getHours();
+  let el = document.getElementById("status");
+
+  if(jam >= 12 && jam < 16){
+    el.innerHTML = "<span class='online'>🟢 Admin Online</span>";
+  } else {
+    el.innerHTML = "<span class='offline'>🔴 Admin Offline</span>";
+  }
+}
+setInterval(cekStatus,1000);
+
+// HISTORY LOCAL
+function loadHistory(){
+  let data = JSON.parse(localStorage.getItem("history") || "[]");
+  let el = document.getElementById("history");
+  el.innerHTML = data.map(d => `
+    <div>📌 ${d.link} | ${d.emoji}</div>
+  `).join("");
+}
+loadHistory();
+
+// KIRIM
+function kirim(){
+  let last = localStorage.getItem("lastSend");
+  let now = Date.now();
+
+  if(last && now - last < 300000){
+    alert("Tunggu 5 menit!");
+    return;
+  }
+
+  let link = document.getElementById("link").value;
+  let emoji = document.getElementById("emoji").value;
+
+  document.getElementById("loading").innerHTML = "Sending...";
+
+  setTimeout(()=>{
+    document.getElementById("loading").innerHTML = "";
+
+    document.getElementById("confirm").innerHTML = `
+      <p>Apakah sudah benar?</p>
+      <p>${link}</p>
+      <p>${emoji}</p>
+      <button onclick="submitData('${link}','${emoji}')">Ya, Kirim</button>
+      <button onclick="ulang()">Ulangi</button>
+    `;
+  },5000);
+}
+
+function ulang(){
+  document.getElementById("confirm").innerHTML="";
+}
+
+function submitData(link,emoji){
+  let id = Date.now();
+
+  db.ref("requests/"+id).set({
+    link, emoji,
+    status:"pending",
+    time:new Date().toLocaleString()
+  });
+
+  // simpan history
+  let hist = JSON.parse(localStorage.getItem("history")||"[]");
+  hist.push({link,emoji});
+  localStorage.setItem("history",JSON.stringify(hist));
+
+  localStorage.setItem("lastSend",Date.now());
+
+  loadHistory();
+  document.getElementById("confirm").innerHTML="Berhasil!";
+}
+</script>
+
+</body>
+</html>
