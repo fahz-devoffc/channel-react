@@ -1,1 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
 
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<style>
+body {
+  font-family: 'Segoe UI';
+  background:#020617;
+  color:white;
+  margin:0;
+}
+
+.header {
+  padding:15px;
+  background:#0f172a;
+  text-align:center;
+}
+
+.card {
+  background:#1e293b;
+  margin:10px;
+  padding:10px;
+  border-radius:10px;
+}
+
+button {
+  margin:5px;
+  padding:8px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.ok { background:#22c55e; }
+.no { background:#ef4444; }
+
+.log {
+  margin:10px;
+  padding:10px;
+  background:#111827;
+  border-radius:10px;
+  max-height:200px;
+  overflow:auto;
+  font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<h2>Admin Panel</h2>
+</div>
+
+<div id="login" style="text-align:center;margin-top:50px;">
+<input type="password" id="token" placeholder="Token">
+<button onclick="login()">Masuk</button>
+</div>
+
+<div id="panel" style="display:none;">
+<h3 style="text-align:center;">Permintaan</h3>
+<div id="data"></div>
+
+<div class="log">
+<h3>Activity Log</h3>
+<div id="log"></div>
+</div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAJodnkdF_FiJ3bdUE2Jhpd91W6AnZ5KbI",
+  authDomain: "chan-react.firebaseapp.com",
+  databaseURL: "https://chan-react-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "chan-react",
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+function login(){
+  let token = document.getElementById("token").value;
+
+  if(token === "Admin123#"){
+    document.getElementById("login").style.display="none";
+    document.getElementById("panel").style.display="block";
+    loadData();
+    loadLog();
+  } else {
+    alert("Token salah!");
+  }
+}
+
+function loadData(){
+  db.ref("requests").on("value",snap=>{
+    let el = document.getElementById("data");
+    el.innerHTML="";
+
+    snap.forEach(c=>{
+      let v = c.val();
+      let id = c.key;
+
+      if(v.status === "pending"){
+        el.innerHTML += `
+        <div class="card">
+          <p>${v.link}</p>
+          <p>${v.emoji}</p>
+          <button class="ok" onclick="ok('${id}')">Kerjakan</button>
+          <button class="no" onclick="tolak('${id}')">Tolak</button>
+        </div>
+        `;
+      }
+    });
+  });
+}
+
+function ok(id){
+  db.ref("requests/"+id).update({status:"done"});
+  tambahLog("Dikerjakan: "+id);
+}
+
+function tolak(id){
+  db.ref("requests/"+id).remove();
+  tambahLog("Ditolak: "+id);
+}
+
+function tambahLog(text){
+  let logRef = db.ref("logs").push();
+  logRef.set({
+    text:text,
+    time:new Date().toLocaleString()
+  });
+}
+
+function loadLog(){
+  db.ref("logs").on("value",snap=>{
+    let el = document.getElementById("log");
+    el.innerHTML="";
+
+    snap.forEach(c=>{
+      let v = c.val();
+      el.innerHTML += `<div>📌 ${v.text} (${v.time})</div>`;
+    });
+  });
+}
+</script>
+
+</body>
+</html>
