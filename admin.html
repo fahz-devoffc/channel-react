@@ -31,6 +31,11 @@
             box-shadow: 0 20px 35px rgba(0,0,0,0.4);
         }
 
+        .login-container h2 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
         .login-container input {
             width: 100%;
             padding: 14px;
@@ -66,10 +71,38 @@
             background: #1a1d2e;
             padding: 20px 25px;
             border-radius: 28px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-admin h2 {
+            color: white;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: #0f111f;
+            padding: 6px 15px;
+            border-radius: 40px;
+            color: #c084fc;
+            font-size: 13px;
         }
 
         .logout-btn {
             background: #ef4444;
+            padding: 8px 20px;
+            border-radius: 40px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .refresh-btn {
+            background: #3b82f6;
             padding: 8px 20px;
             border-radius: 40px;
             border: none;
@@ -87,32 +120,28 @@
             background: #14182b;
             border-radius: 24px;
             padding: 20px 25px;
-            border-left: 6px solid #8b5cf6;
-            transition: 0.1s;
+            border-left: 6px solid #f59e0b;
+            transition: 0.2s;
         }
 
-        .request-card.pending {
-            border-left-color: #f59e0b;
-        }
         .request-card.done {
-            opacity: 0.7;
+            opacity: 0.6;
             border-left-color: #22c55e;
+            background: #0f1222;
         }
+
         .request-card.rejected {
             display: none;
         }
 
-        .request-info {
-            margin-bottom: 15px;
-        }
-
         .wa-link {
-            font-size: 16px;
+            font-size: 15px;
             word-break: break-all;
             background: #0f111f;
             padding: 10px 14px;
             border-radius: 18px;
             font-family: monospace;
+            color: #a855f7;
         }
 
         .emoji-list {
@@ -141,6 +170,11 @@
             border-radius: 40px;
             cursor: pointer;
             font-weight: 600;
+            transition: 0.1s;
+        }
+
+        .btn-approve:active {
+            transform: scale(0.97);
         }
 
         .btn-reject {
@@ -166,28 +200,63 @@
             background: #f59e0b20;
             color: #fbbf24;
         }
+
+        .badge-done {
+            background: #22c55e20;
+            color: #86efac;
+        }
+
+        .empty-state {
+            color: white;
+            text-align: center;
+            padding: 50px;
+            background: #14182b;
+            border-radius: 28px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1e1b2e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-size: 14px;
+            z-index: 1100;
+            border-left: 4px solid #a855f7;
+            box-shadow: 0 5px 20px black;
+        }
     </style>
 </head>
 <body>
 
 <div class="login-container" id="loginBox">
-    <h2 style="color:white; margin-bottom: 15px;">🔐 Admin Access</h2>
+    <h2>🔐 Admin Access</h2>
     <input type="password" id="tokenInput" placeholder="Masukkan Token">
     <button id="loginBtn">Masuk</button>
-    <p style="color:#aaa; margin-top: 15px; font-size:12px">Token rahasia</p>
+    <p style="color:#aaa; margin-top: 15px; font-size:12px">Token: Admin123#</p>
 </div>
 
 <div class="admin-panel" id="adminPanel">
     <div class="header-admin">
-        <h2 style="color:white;">📋 Request Masuk</h2>
-        <button class="logout-btn" id="logoutBtn">Keluar</button>
+        <h2>📋 Panel Request</h2>
+        <div class="stats">
+            <div class="stat-badge" id="pendingCount">Pending: 0</div>
+            <div class="stat-badge" id="doneCount">Selesai: 0</div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="refresh-btn" id="refreshBtn">🔄 Refresh</button>
+            <button class="logout-btn" id="logoutBtn">Keluar</button>
+        </div>
     </div>
     <div class="requests-grid" id="requestsContainer">
-        <div style="color:white; text-align:center;">Loading request...</div>
+        <div class="empty-state">Loading request...</div>
     </div>
 </div>
 
 <script>
+    // ========== FIREBASE ==========
     const firebaseConfig = {
         apiKey: "AIzaSyAJodnkdF_FiJ3bdUE2Jhpd91W6AnZ5KbI",
         authDomain: "chan-react.firebaseapp.com",
@@ -202,14 +271,15 @@
     const database = firebase.database();
     const requestsRef = database.ref('requests');
 
-    let currentUser = null;
+    let allRequests = [];
 
+    // ========== AUTH ==========
     function checkAuth() {
         const token = localStorage.getItem('adminToken');
         if (token === 'Admin123#') {
             document.getElementById('loginBox').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
-            loadRequests();
+            startListening();
         } else {
             document.getElementById('loginBox').style.display = 'block';
             document.getElementById('adminPanel').style.display = 'none';
@@ -230,66 +300,137 @@
     document.getElementById('logoutBtn').addEventListener('click', () => {
         localStorage.removeItem('adminToken');
         checkAuth();
+        // Hentikan listener
+        if (window.requestsListener) {
+            requestsRef.off('value', window.requestsListener);
+        }
     });
 
-    function loadRequests() {
-        requestsRef.on('value', (snapshot) => {
-            const container = document.getElementById('requestsContainer');
-            container.innerHTML = '';
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+        showToast("🔄 Refresh manual");
+        renderRequests();
+    });
+
+    // ========== REALTIME LISTENER DARI FIREBASE ==========
+    function startListening() {
+        // Listener untuk semua perubahan di requests
+        window.requestsListener = requestsRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (!data) {
-                container.innerHTML = '<div style="color:white; text-align:center;">✨ Belum ada request</div>';
-                return;
+                allRequests = [];
+            } else {
+                // Konversi ke array
+                allRequests = Object.values(data).map(req => ({
+                    ...req,
+                    firebaseKey: Object.keys(data).find(key => data[key].id === req.id) || req.id
+                }));
             }
+            renderRequests();
+            updateStats();
+        });
+    }
 
-            const requestsArray = Object.values(data).filter(r => r.status === 'pending').reverse();
-            if (requestsArray.length === 0) {
-                container.innerHTML = '<div style="color:white; text-align:center;">✅ Semua request sudah diproses</div>';
-            }
+    function updateStats() {
+        const pending = allRequests.filter(r => r.status === 'pending').length;
+        const done = allRequests.filter(r => r.status === 'done').length;
+        document.getElementById('pendingCount').innerHTML = `Pending: ${pending}`;
+        document.getElementById('doneCount').innerHTML = `Selesai: ${done}`;
+    }
 
-            requestsArray.forEach(req => {
-                const card = document.createElement('div');
-                card.className = 'request-card pending';
-                card.dataset.id = req.id;
-                card.innerHTML = `
-                    <div class="badge badge-pending">⏳ Pending</div>
-                    <div class="request-info">
-                        <div class="wa-link">🔗 ${escapeHtml(req.waLink)}</div>
-                        <div class="emoji-list">${escapeHtml(req.emojis)}</div>
-                        <div class="timestamp">📅 ${new Date(req.timestamp).toLocaleString('id-ID')}</div>
-                    </div>
+    // ========== RENDER REQUEST ==========
+    function renderRequests() {
+        const container = document.getElementById('requestsContainer');
+        
+        if (!allRequests.length) {
+            container.innerHTML = '<div class="empty-state">✨ Belum ada request masuk</div>';
+            return;
+        }
+
+        // Urutkan dari yang terbaru (timestamp terbesar)
+        const sorted = [...allRequests].sort((a, b) => b.timestamp - a.timestamp);
+        
+        // Tampilkan semua request (pending + done), tapi beda styling
+        container.innerHTML = '';
+        
+        sorted.forEach(req => {
+            const isPending = req.status === 'pending';
+            const card = document.createElement('div');
+            card.className = `request-card ${req.status === 'done' ? 'done' : ''}`;
+            card.dataset.id = req.id;
+            
+            card.innerHTML = `
+                <div class="badge ${isPending ? 'badge-pending' : 'badge-done'}">
+                    ${isPending ? '⏳ Pending' : '✅ Selesai'}
+                </div>
+                <div class="wa-link">🔗 ${escapeHtml(req.waLink)}</div>
+                <div class="emoji-list">${escapeHtml(req.emojis)}</div>
+                <div class="timestamp">📅 ${new Date(req.timestamp).toLocaleString('id-ID')}</div>
+                ${isPending ? `
                     <div class="action-buttons">
-                        <button class="btn-approve" data-id="${req.id}" data-link="${escapeHtml(req.waLink)}" data-emoji="${escapeHtml(req.emojis)}">✅ Kerjakan</button>
-                        <button class="btn-reject" data-id="${req.id}">❌ Tolak</button>
+                        <button class="btn-approve" data-id="${req.id}" data-key="${req.firebaseKey}">✅ Kerjakan</button>
+                        <button class="btn-reject" data-id="${req.id}" data-key="${req.firebaseKey}">❌ Tolak</button>
                     </div>
-                `;
-                container.appendChild(card);
-            });
+                ` : `
+                    <div class="action-buttons">
+                        <button class="btn-reject" data-id="${req.id}" data-key="${req.firebaseKey}" style="background:#6b7280;">🗑 Hapus</button>
+                    </div>
+                `}
+            `;
+            container.appendChild(card);
+        });
 
-            // Event listener tombol
-            document.querySelectorAll('.btn-approve').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const id = btn.dataset.id;
-                    const link = btn.dataset.link;
-                    const emoji = btn.dataset.emoji;
-                    alert(`Proses request:\nLink: ${link}\nEmoji: ${emoji}\n\nSetelah selesai, request akan ditandai done.`);
-                    await requestsRef.child(id).update({ status: 'done' });
-                    showNotif('Request ditandai selesai');
-                });
-            });
-
-            document.querySelectorAll('.btn-reject').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const id = btn.dataset.id;
-                    if (confirm('Tolak request ini?')) {
-                        await requestsRef.child(id).remove();
-                        showNotif('Request ditolak dan dihapus');
-                    }
-                });
+        // Attach event listeners ke tombol yang baru di-render
+        document.querySelectorAll('.btn-approve').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                const key = btn.dataset.key;
+                await processRequest(id, key, 'done');
             });
         });
+
+        document.querySelectorAll('.btn-reject').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                const key = btn.dataset.key;
+                if (confirm('Tolak/hapus request ini?')) {
+                    await rejectRequest(id, key);
+                }
+            });
+        });
+    }
+
+    // ========== PROSES KERJAKAN (UPDATE STATUS JADI DONE) ==========
+    async function processRequest(id, firebaseKey, newStatus) {
+        try {
+            // Update status di Firebase
+            await requestsRef.child(firebaseKey).update({ 
+                status: newStatus,
+                processedAt: Date.now()
+            });
+            showToast(`✅ Request ${id.substring(0,8)} ditandai selesai`);
+            
+            // Ini otomatis trigger 'child_changed' di index.html
+            // Karena pake update(), Firebase akan ngirim event child_changed
+        } catch (err) {
+            console.error(err);
+            showToast("❌ Gagal memproses request");
+        }
+    }
+
+    // ========== TOLAK / HAPUS REQUEST ==========
+    async function rejectRequest(id, firebaseKey) {
+        try {
+            // Hapus dari database
+            await requestsRef.child(firebaseKey).remove();
+            showToast(`❌ Request ${id.substring(0,8)} ditolak dan dihapus`);
+            // Request hilang dari database, index.html gak akan liat request ini lagi
+            // Tapi history user tetap ada dengan status 'pending' (bisa ditambahkan opsi rejected)
+        } catch (err) {
+            console.error(err);
+            showToast("❌ Gagal menghapus request");
+        }
     }
 
     function escapeHtml(str) {
@@ -302,21 +443,15 @@
         });
     }
 
-    function showNotif(msg) {
-        const div = document.createElement('div');
-        div.innerText = msg;
-        div.style.position = 'fixed';
-        div.style.bottom = '20px';
-        div.style.right = '20px';
-        div.style.background = '#8b5cf6';
-        div.style.padding = '12px 20px';
-        div.style.borderRadius = '30px';
-        div.style.color = 'white';
-        div.style.zIndex = '999';
-        document.body.appendChild(div);
-        setTimeout(() => div.remove(), 2000);
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
     }
 
+    // Start
     checkAuth();
 </script>
 </body>
