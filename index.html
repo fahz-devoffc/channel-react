@@ -18,24 +18,21 @@
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
 
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
         .container {
-            max-width: 550px;
+            max-width: 650px;
             width: 100%;
+            margin: 0 auto;
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(15px);
             border-radius: 32px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 30px 28px;
             box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
         }
 
         .header {
@@ -50,7 +47,6 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            letter-spacing: -0.5px;
         }
 
         .header p {
@@ -59,7 +55,6 @@
             margin-top: 8px;
         }
 
-        /* Status Admin */
         .admin-status {
             background: rgba(0, 0, 0, 0.4);
             border-radius: 60px;
@@ -83,7 +78,6 @@
             height: 12px;
             border-radius: 50%;
             background: gray;
-            box-shadow: 0 0 5px currentColor;
             transition: all 0.2s;
         }
 
@@ -110,7 +104,6 @@
             border-radius: 30px;
         }
 
-        /* Form */
         .form-group {
             margin-bottom: 22px;
         }
@@ -170,7 +163,156 @@
             transform: none;
         }
 
-        /* Modal Konfirmasi */
+        /* Panduan Button */
+        .guide-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            border-radius: 40px;
+            color: #c084fc;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .guide-btn:hover {
+            background: rgba(168, 85, 247, 0.4);
+        }
+
+        .guide-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .guide-panel.show {
+            display: block;
+        }
+
+        .guide-panel h4 {
+            color: #c084fc;
+            margin-bottom: 12px;
+        }
+
+        .guide-panel ul {
+            padding-left: 20px;
+            color: rgba(255,255,255,0.8);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .guide-panel li {
+            margin: 8px 0;
+        }
+
+        /* History */
+        .history-section {
+            margin-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 20px;
+        }
+
+        .history-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .history-content {
+            flex: 1;
+        }
+
+        .history-link {
+            font-size: 12px;
+            color: #a855f7;
+            word-break: break-all;
+            font-family: monospace;
+        }
+
+        .history-emoji {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .history-time {
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 5px;
+        }
+
+        .history-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 80px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-dot.pending {
+            background: #eab308;
+            box-shadow: 0 0 5px #eab308;
+        }
+
+        .status-dot.done {
+            background: #22c55e;
+            box-shadow: 0 0 5px #22c55e;
+        }
+
+        .status-text-small {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .clear-history {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: fit-content;
+        }
+
+        .modal, .loading-overlay, .toast {
+            /* Sama seperti sebelumnya */
+            position: fixed;
+        }
+
         .modal {
             position: fixed;
             top: 0;
@@ -242,29 +384,6 @@
             color: white;
         }
 
-        /* Cooldown & Toast */
-        .cooldown-info {
-            text-align: center;
-            margin-top: 18px;
-            font-size: 13px;
-            color: #fbbf24;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e1b2e;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 60px;
-            font-size: 14px;
-            z-index: 1100;
-            border-left: 4px solid #a855f7;
-            box-shadow: 0 5px 20px black;
-        }
-
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -295,10 +414,32 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e1b2e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-size: 14px;
+            z-index: 1100;
+            border-left: 4px solid #a855f7;
+            box-shadow: 0 5px 20px black;
+        }
+
+        .cooldown-info {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 13px;
+            color: #fbbf24;
+        }
     </style>
 </head>
 <body>
-<div class="container" id="app">
+<div class="container">
     <div class="header">
         <h1>📡 Channel React</h1>
         <p>Kirim request emoji ke channel WhatsApp</p>
@@ -309,12 +450,12 @@
             <div class="led" id="statusLed"></div>
             <span class="status-text" id="statusText">Memeriksa...</span>
         </div>
-        <div class="operational-hours" id="operationalText">⏰ 12:00 - 16:00 WIB</div>
+        <div class="operational-hours" id="operationalText">⏰ 12:00 - 21:00 WIB</div>
     </div>
 
     <div class="form-group">
         <label>🔗 Link Channel WhatsApp</label>
-        <input type="url" id="waLink" placeholder="https://chat.whatsapp.com/..." autocomplete="off">
+        <input type="text" id="waLink" placeholder="Masukkan link WhatsApp (bebas, tidak perlu valid)" autocomplete="off">
     </div>
 
     <div class="form-group">
@@ -324,6 +465,30 @@
 
     <button class="btn-submit" id="submitBtn">📨 Kirim Request</button>
     <div class="cooldown-info" id="cooldownInfo"></div>
+
+    <!-- Tombol Panduan -->
+    <div class="guide-btn" id="guideBtn">📖 Buka Panduan</div>
+    <div class="guide-panel" id="guidePanel">
+        <h4>📋 Panduan Penggunaan</h4>
+        <ul>
+            <li>🕐 <strong>Jam operasional admin:</strong> 12:00 - 21:00</li>
+            <li>⏳ <strong>Khusus jam 16:00 sampai 19:20</strong> — Request akan dikerjakan jam 19:22</li>
+            <li>🚫 <strong>DILARANG SPAM</strong> — Cooldown 5 menit per pengiriman</li>
+            <li>⚡ <strong>Request dikerjakan selama 3 Menit</strong> setelah admin mengambil</li>
+            <li>💸 <strong>TOOLS INI FREE (OPEN-SOURCE)</strong> — Siapa pun boleh memakai</li>
+        </ul>
+    </div>
+
+    <!-- History Section -->
+    <div class="history-section">
+        <div class="history-title">
+            📜 History Kiriman
+            <button class="clear-history" id="clearHistoryBtn">Hapus History</button>
+        </div>
+        <div class="history-list" id="historyList">
+            <div style="color:rgba(255,255,255,0.5); text-align:center; padding:20px;">Belum ada history</div>
+        </div>
+    </div>
 </div>
 
 <!-- Modal Konfirmasi -->
@@ -360,11 +525,12 @@
     const requestsRef = database.ref('requests');
 
     // ========== GLOBAL ==========
-    let lastSubmitTime = 0;
-    const COOLDOWN_MS = 5 * 60 * 1000; // 5 menit
+    let lastSubmitTime = localStorage.getItem('lastSubmitTime') ? parseInt(localStorage.getItem('lastSubmitTime')) : 0;
+    const COOLDOWN_MS = 5 * 60 * 1000;
     let pendingData = null;
+    let history = [];
 
-    // DOM elements
+    // DOM
     const waLinkInput = document.getElementById('waLink');
     const emojiInput = document.getElementById('emojiList');
     const submitBtn = document.getElementById('submitBtn');
@@ -376,15 +542,18 @@
     const loadingOverlay = document.getElementById('loadingOverlay');
     const statusLed = document.getElementById('statusLed');
     const statusTextSpan = document.getElementById('statusText');
-    const operationalSpan = document.getElementById('operationalText');
+    const historyListDiv = document.getElementById('historyList');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const guideBtn = document.getElementById('guideBtn');
+    const guidePanel = document.getElementById('guidePanel');
 
-    // ========== JAM OPERASIONAL (Real-time berdasarkan waktu user) ==========
+    // ========== JAM OPERASIONAL 12:00 - 21:00 ==========
     function checkOperationalStatus() {
         const now = new Date();
         const hours = now.getHours();
         const minutes = now.getMinutes();
         const currentTime = hours + minutes / 60;
-        const isOpen = (currentTime >= 12.0 && currentTime < 16.0);
+        const isOpen = (currentTime >= 12.0 && currentTime < 21.0);
         
         if (isOpen) {
             statusLed.className = 'led online';
@@ -399,11 +568,98 @@
         }
     }
 
-    // Update setiap menit
     setInterval(checkOperationalStatus, 60000);
     checkOperationalStatus();
 
-    // ========== COOLDOWN CHECK ==========
+    // ========== PANDUAN TOGGLE ==========
+    let guideOpen = false;
+    guideBtn.addEventListener('click', () => {
+        guideOpen = !guideOpen;
+        if (guideOpen) {
+            guidePanel.classList.add('show');
+            guideBtn.innerHTML = '📖 Tutup Panduan';
+        } else {
+            guidePanel.classList.remove('show');
+            guideBtn.innerHTML = '📖 Buka Panduan';
+        }
+    });
+
+    // ========== HISTORY LOCALSTORAGE ==========
+    function loadHistory() {
+        const saved = localStorage.getItem('requestHistory');
+        if (saved) {
+            history = JSON.parse(saved);
+        } else {
+            history = [];
+        }
+        renderHistory();
+    }
+
+    function saveHistory() {
+        localStorage.setItem('requestHistory', JSON.stringify(history));
+    }
+
+    function addToHistory(requestId, waLink, emojis, status = 'pending') {
+        history.unshift({
+            id: requestId,
+            waLink: waLink,
+            emojis: emojis,
+            status: status,
+            timestamp: Date.now()
+        });
+        // Batasi history maksimal 50
+        if (history.length > 50) history.pop();
+        saveHistory();
+        renderHistory();
+    }
+
+    function updateHistoryStatus(requestId, newStatus) {
+        const index = history.findIndex(h => h.id === requestId);
+        if (index !== -1) {
+            history[index].status = newStatus;
+            saveHistory();
+            renderHistory();
+        }
+    }
+
+    function renderHistory() {
+        if (history.length === 0) {
+            historyListDiv.innerHTML = '<div style="color:rgba(255,255,255,0.5); text-align:center; padding:20px;">Belum ada history</div>';
+            return;
+        }
+        historyListDiv.innerHTML = '';
+        history.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            const date = new Date(item.timestamp);
+            const timeStr = date.toLocaleString('id-ID');
+            const statusClass = item.status === 'pending' ? 'pending' : 'done';
+            const statusText = item.status === 'pending' ? 'Menunggu' : 'Selesai';
+            div.innerHTML = `
+                <div class="history-content">
+                    <div class="history-link">🔗 ${escapeHtml(item.waLink.substring(0, 50))}${item.waLink.length > 50 ? '...' : ''}</div>
+                    <div class="history-emoji">😀 ${escapeHtml(item.emojis)}</div>
+                    <div class="history-time">${timeStr}</div>
+                </div>
+                <div class="history-status">
+                    <div class="status-dot ${statusClass}"></div>
+                    <span class="status-text-small" style="color:${statusClass === 'pending' ? '#eab308' : '#22c55e'}">${statusText}</span>
+                </div>
+            `;
+            historyListDiv.appendChild(div);
+        });
+    }
+
+    clearHistoryBtn.addEventListener('click', () => {
+        if (confirm('Hapus semua history?')) {
+            history = [];
+            saveHistory();
+            renderHistory();
+            showToast('History dihapus');
+        }
+    });
+
+    // ========== COOLDOWN ==========
     function updateCooldownUI() {
         const now = Date.now();
         const elapsed = now - lastSubmitTime;
@@ -424,42 +680,36 @@
     }
 
     setInterval(updateCooldownUI, 1000);
+    updateCooldownUI();
 
-    // ========== LOADING SIMULASI 5 DETIK ==========
-    function showLoading(show) {
-        if (show) {
-            loadingOverlay.classList.add('active');
-        } else {
-            loadingOverlay.classList.remove('active');
+    // ========== FIREBASE REALTIME LISTENER UNTUK UPDATE STATUS ==========
+    requestsRef.on('child_changed', (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.id) {
+            // Update history status jika status berubah jadi done
+            if (data.status === 'done') {
+                updateHistoryStatus(data.id, 'done');
+                showToast(`✅ Request ${data.id.substring(0,8)} sudah selesai!`);
+            }
         }
-    }
-
-    // ========== TAMPILKAN MODAL KONFIRMASI ==========
-    function showConfirmModal(link, emojis) {
-        pendingData = { link, emojis };
-        previewDiv.innerHTML = `
-            <strong>🔗 Link:</strong> ${escapeHtml(link)}<br><br>
-            <strong>😀 Emoji:</strong> ${escapeHtml(emojis)}
-        `;
-        modal.classList.add('active');
-    }
+    });
 
     // ========== KIRIM KE FIREBASE ==========
     async function sendToFirebase(link, emojis) {
         const isOpen = checkOperationalStatus();
         if (!isOpen) {
-            alert("Admin sedang offline (12:00-16:00). Tidak bisa mengirim request.");
+            showToast("Admin sedang offline (12:00-21:00). Tidak bisa mengirim request.");
             return false;
         }
 
         const newRequestRef = requestsRef.push();
+        const requestId = newRequestRef.key;
         const requestData = {
-            id: newRequestRef.key,
+            id: requestId,
             waLink: link,
             emojis: emojis,
             timestamp: Date.now(),
-            status: 'pending', // pending, done, rejected
-            userIP: "anonymous"
+            status: 'pending'
         };
         
         try {
@@ -467,6 +717,10 @@
             lastSubmitTime = Date.now();
             localStorage.setItem('lastSubmitTime', lastSubmitTime);
             updateCooldownUI();
+            
+            // Tambah ke history dengan status pending
+            addToHistory(requestId, link, emojis, 'pending');
+            
             showToast("✅ Request terkirim! Admin akan memproses.");
             return true;
         } catch (err) {
@@ -476,7 +730,7 @@
         }
     }
 
-    // ========== PROSES SUBMIT DENGAN LOADING + KONFIRMASI ==========
+    // ========== LOADING + KONFIRMASI ==========
     submitBtn.addEventListener('click', async () => {
         const waLink = waLinkInput.value.trim();
         const emojis = emojiInput.value.trim();
@@ -486,17 +740,12 @@
             return;
         }
 
-        if (!waLink.startsWith('https://chat.whatsapp.com/') && !waLink.startsWith('https://wa.me/')) {
-            showToast("Masukkan link WhatsApp yang valid (chat.whatsapp.com)");
-            return;
-        }
-
         // Cek cooldown
         if (!updateCooldownUI()) return;
 
         // Cek jam operasional
         if (!checkOperationalStatus()) {
-            showToast("Admin offline, kirim hanya jam 12:00 - 16:00");
+            showToast("Admin offline, kirim hanya jam 12:00 - 21:00");
             return;
         }
 
@@ -506,17 +755,18 @@
         showLoading(false);
 
         // Tampilkan modal konfirmasi
-        showConfirmModal(waLink, emojis);
+        pendingData = { link: waLink, emojis: emojis };
+        previewDiv.innerHTML = `
+            <strong>🔗 Link:</strong> ${escapeHtml(waLink)}<br><br>
+            <strong>😀 Emoji:</strong> ${escapeHtml(emojis)}
+        `;
+        modal.classList.add('active');
     });
 
     confirmBtn.addEventListener('click', async () => {
         if (!pendingData) return;
         modal.classList.remove('active');
-        
-        // Kirim ke Firebase
         await sendToFirebase(pendingData.link, pendingData.emojis);
-        
-        // Kosongkan form
         waLinkInput.value = '';
         emojiInput.value = '';
         pendingData = null;
@@ -528,15 +778,18 @@
         showToast("✏️ Silakan perbaiki data.");
     });
 
-    // Helper
+    function showLoading(show) {
+        if (show) loadingOverlay.classList.add('active');
+        else loadingOverlay.classList.remove('active');
+    }
+
     function escapeHtml(str) {
+        if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
             if (m === '&') return '&amp;';
             if (m === '<') return '&lt;';
             if (m === '>') return '&gt;';
             return m;
-        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-            return c;
         });
     }
 
@@ -548,10 +801,8 @@
         setTimeout(() => toast.remove(), 3000);
     }
 
-    // Load cooldown dari localStorage
-    const saved = localStorage.getItem('lastSubmitTime');
-    if (saved) lastSubmitTime = parseInt(saved);
-    updateCooldownUI();
+    // Inisialisasi
+    loadHistory();
 </script>
 </body>
 </html>
