@@ -2,8 +2,9 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | Channel React</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Channel React | Kirim Request</title>
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
@@ -14,180 +15,501 @@
         }
 
         body {
-            background: #0a0c15;
-            font-family: 'Poppins', 'Segoe UI', sans-serif;
-            padding: 30px 20px;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
         }
 
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
-        .login-container {
-            max-width: 400px;
-            margin: 100px auto;
-            background: #1a1d2e;
-            padding: 35px;
-            border-radius: 28px;
+        .container {
+            max-width: 650px;
+            width: 100%;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px 28px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
             text-align: center;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
+            margin-bottom: 28px;
         }
 
-        .login-container input {
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #a855f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .admin-status {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 60px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .led {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: gray;
+            transition: all 0.2s;
+        }
+
+        .led.online {
+            background: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
+        }
+
+        .led.offline {
+            background: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+        }
+
+        .status-text {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .operational-hours {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            background: rgba(0,0,0,0.3);
+            padding: 5px 12px;
+            border-radius: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: white;
+            font-size: 15px;
+            font-family: 'Poppins', monospace;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #a855f7;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .btn-submit {
             width: 100%;
             padding: 14px;
-            margin: 15px 0;
-            background: #0f111f;
-            border: 1px solid #2d2f42;
-            border-radius: 40px;
-            color: white;
-            font-size: 16px;
-        }
-
-        .login-container button {
-            background: #8b5cf6;
-            padding: 12px 30px;
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
             border: none;
             border-radius: 40px;
             color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .admin-panel {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: none;
-        }
-
-        .header-admin {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            background: #1a1d2e;
-            padding: 20px 25px;
-            border-radius: 28px;
-        }
-
-        .logout-btn {
-            background: #ef4444;
-            padding: 8px 20px;
-            border-radius: 40px;
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
-
-        .requests-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-
-        .request-card {
-            background: #14182b;
-            border-radius: 24px;
-            padding: 20px 25px;
-            border-left: 6px solid #8b5cf6;
-            transition: 0.1s;
-        }
-
-        .request-card.pending {
-            border-left-color: #f59e0b;
-        }
-        .request-card.done {
-            opacity: 0.7;
-            border-left-color: #22c55e;
-        }
-        .request-card.rejected {
-            display: none;
-        }
-
-        .request-info {
-            margin-bottom: 15px;
-        }
-
-        .wa-link {
+            font-weight: 700;
             font-size: 16px;
-            word-break: break-all;
-            background: #0f111f;
-            padding: 10px 14px;
-            border-radius: 18px;
-            font-family: monospace;
-        }
-
-        .emoji-list {
-            font-size: 24px;
-            letter-spacing: 5px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
             margin-top: 10px;
         }
 
-        .timestamp {
-            font-size: 12px;
-            color: #7e84a3;
-            margin-top: 10px;
+        .btn-submit:active {
+            transform: scale(0.97);
         }
 
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 18px;
+        .btn-submit.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .btn-approve {
-            background: #22c55e;
-            color: white;
-            border: none;
-            padding: 10px 24px;
+        /* Panduan Button */
+        .guide-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.5);
             border-radius: 40px;
+            color: #c084fc;
+            font-weight: 600;
             cursor: pointer;
-            font-weight: 600;
+            margin-top: 15px;
+            transition: 0.2s;
+            text-align: center;
         }
 
-        .btn-reject {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 600;
+        .guide-btn:hover {
+            background: rgba(168, 85, 247, 0.4);
         }
 
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 12px;
-            font-weight: 600;
+        .guide-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .guide-panel.show {
+            display: block;
+        }
+
+        .guide-panel h4 {
+            color: #c084fc;
             margin-bottom: 12px;
         }
 
-        .badge-pending {
-            background: #f59e0b20;
+        .guide-panel ul {
+            padding-left: 20px;
+            color: rgba(255,255,255,0.8);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .guide-panel li {
+            margin: 8px 0;
+        }
+
+        /* History */
+        .history-section {
+            margin-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 20px;
+        }
+
+        .history-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .history-content {
+            flex: 1;
+        }
+
+        .history-link {
+            font-size: 12px;
+            color: #a855f7;
+            word-break: break-all;
+            font-family: monospace;
+        }
+
+        .history-emoji {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .history-time {
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 5px;
+        }
+
+        .history-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 80px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-dot.pending {
+            background: #eab308;
+            box-shadow: 0 0 5px #eab308;
+        }
+
+        .status-dot.done {
+            background: #22c55e;
+            box-shadow: 0 0 5px #22c55e;
+        }
+
+        .status-text-small {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .clear-history {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: fit-content;
+        }
+
+        .modal, .loading-overlay, .toast {
+            /* Sama seperti sebelumnya */
+            position: fixed;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #1e1b2e;
+            border-radius: 28px;
+            padding: 28px;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 16px;
+            color: #c084fc;
+        }
+
+        .data-preview {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 20px;
+            text-align: left;
+            margin: 15px 0;
+            word-break: break-all;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-confirm {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #ef4444;
+            color: white;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            visibility: hidden;
+        }
+
+        .loading-overlay.active {
+            visibility: visible;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(168,85,247,0.3);
+            border-top: 4px solid #a855f7;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e1b2e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-size: 14px;
+            z-index: 1100;
+            border-left: 4px solid #a855f7;
+            box-shadow: 0 5px 20px black;
+        }
+
+        .cooldown-info {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 13px;
             color: #fbbf24;
         }
     </style>
 </head>
 <body>
+<div class="container">
+    <div class="header">
+        <h1>📡 Channel React</h1>
+        <p>Kirim request emoji ke channel WhatsApp</p>
+    </div>
 
-<div class="login-container" id="loginBox">
-    <h2 style="color:white; margin-bottom: 15px;">🔐 Admin Access</h2>
-    <input type="password" id="tokenInput" placeholder="Masukkan Token">
-    <button id="loginBtn">Masuk</button>
-    <p style="color:#aaa; margin-top: 15px; font-size:12px">Token rahasia</p>
+    <div class="admin-status">
+        <div class="status-indicator">
+            <div class="led" id="statusLed"></div>
+            <span class="status-text" id="statusText">Memeriksa...</span>
+        </div>
+        <div class="operational-hours" id="operationalText">⏰ 12:00 - 21:00 WIB</div>
+    </div>
+
+    <div class="form-group">
+        <label>🔗 Link Channel WhatsApp</label>
+        <input type="text" id="waLink" placeholder="Masukkan link WhatsApp (bebas, tidak perlu valid)" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+        <label>😀 Emoji (pisahkan dengan koma)</label>
+        <textarea id="emojiList" placeholder="Contoh: 😊, 🎉, ❤️, 🔥" rows="3"></textarea>
+    </div>
+
+    <button class="btn-submit" id="submitBtn">📨 Kirim Request</button>
+    <div class="cooldown-info" id="cooldownInfo"></div>
+
+    <!-- Tombol Panduan -->
+    <div class="guide-btn" id="guideBtn">📖 Buka Panduan</div>
+    <div class="guide-panel" id="guidePanel">
+        <h4>📋 Panduan Penggunaan</h4>
+        <ul>
+            <li>🕐 <strong>Jam operasional admin:</strong> 12:00 - 21:00</li>
+            <li>⏳ <strong>Khusus jam 16:00 sampai 19:20</strong> — Request akan dikerjakan jam 19:22</li>
+            <li>🚫 <strong>DILARANG SPAM</strong> — Cooldown 5 menit per pengiriman</li>
+            <li>⚡ <strong>Request dikerjakan selama 3 Menit</strong> setelah admin mengambil</li>
+            <li>💸 <strong>TOOLS INI FREE (OPEN-SOURCE)</strong> — Siapa pun boleh memakai</li>
+        </ul>
+    </div>
+
+    <!-- History Section -->
+    <div class="history-section">
+        <div class="history-title">
+            📜 History Kiriman
+            <button class="clear-history" id="clearHistoryBtn">Hapus History</button>
+        </div>
+        <div class="history-list" id="historyList">
+            <div style="color:rgba(255,255,255,0.5); text-align:center; padding:20px;">Belum ada history</div>
+        </div>
+    </div>
 </div>
 
-<div class="admin-panel" id="adminPanel">
-    <div class="header-admin">
-        <h2 style="color:white;">📋 Request Masuk</h2>
-        <button class="logout-btn" id="logoutBtn">Keluar</button>
+<!-- Modal Konfirmasi -->
+<div class="modal" id="confirmModal">
+    <div class="modal-content">
+        <h3>✅ Apakah sudah benar?</h3>
+        <div class="data-preview" id="previewData"></div>
+        <div class="modal-buttons">
+            <button class="btn-cancel" id="cancelBtn">Ulangi</button>
+            <button class="btn-confirm" id="confirmBtn">Ya, Kirim</button>
+        </div>
     </div>
-    <div class="requests-grid" id="requestsContainer">
-        <div style="color:white; text-align:center;">Loading request...</div>
-    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <span style="color:white; margin-left: 15px;">Mengirim...</span>
 </div>
 
 <script>
+    // ========== FIREBASE ==========
     const firebaseConfig = {
         apiKey: "AIzaSyAJodnkdF_FiJ3bdUE2Jhpd91W6AnZ5KbI",
         authDomain: "chan-react.firebaseapp.com",
@@ -202,94 +524,263 @@
     const database = firebase.database();
     const requestsRef = database.ref('requests');
 
-    let currentUser = null;
+    // ========== GLOBAL ==========
+    let lastSubmitTime = localStorage.getItem('lastSubmitTime') ? parseInt(localStorage.getItem('lastSubmitTime')) : 0;
+    const COOLDOWN_MS = 5 * 60 * 1000;
+    let pendingData = null;
+    let history = [];
 
-    function checkAuth() {
-        const token = localStorage.getItem('adminToken');
-        if (token === 'Admin123#') {
-            document.getElementById('loginBox').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'block';
-            loadRequests();
+    // DOM
+    const waLinkInput = document.getElementById('waLink');
+    const emojiInput = document.getElementById('emojiList');
+    const submitBtn = document.getElementById('submitBtn');
+    const cooldownDiv = document.getElementById('cooldownInfo');
+    const modal = document.getElementById('confirmModal');
+    const previewDiv = document.getElementById('previewData');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const statusLed = document.getElementById('statusLed');
+    const statusTextSpan = document.getElementById('statusText');
+    const historyListDiv = document.getElementById('historyList');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const guideBtn = document.getElementById('guideBtn');
+    const guidePanel = document.getElementById('guidePanel');
+
+    // ========== JAM OPERASIONAL 12:00 - 21:00 ==========
+    function checkOperationalStatus() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const currentTime = hours + minutes / 60;
+        const isOpen = (currentTime >= 12.0 && currentTime < 21.0);
+        
+        if (isOpen) {
+            statusLed.className = 'led online';
+            statusTextSpan.innerHTML = 'Online 🟢';
+            statusTextSpan.style.color = '#86efac';
+            return true;
         } else {
-            document.getElementById('loginBox').style.display = 'block';
-            document.getElementById('adminPanel').style.display = 'none';
-            localStorage.removeItem('adminToken');
+            statusLed.className = 'led offline';
+            statusTextSpan.innerHTML = 'Offline 🔴';
+            statusTextSpan.style.color = '#fca5a5';
+            return false;
         }
     }
 
-    document.getElementById('loginBtn').addEventListener('click', () => {
-        const token = document.getElementById('tokenInput').value;
-        if (token === 'Admin123#') {
-            localStorage.setItem('adminToken', token);
-            checkAuth();
+    setInterval(checkOperationalStatus, 60000);
+    checkOperationalStatus();
+
+    // ========== PANDUAN TOGGLE ==========
+    let guideOpen = false;
+    guideBtn.addEventListener('click', () => {
+        guideOpen = !guideOpen;
+        if (guideOpen) {
+            guidePanel.classList.add('show');
+            guideBtn.innerHTML = '📖 Tutup Panduan';
         } else {
-            alert('Token salah!');
+            guidePanel.classList.remove('show');
+            guideBtn.innerHTML = '📖 Buka Panduan';
         }
     });
 
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.removeItem('adminToken');
-        checkAuth();
+    // ========== HISTORY LOCALSTORAGE ==========
+    function loadHistory() {
+        const saved = localStorage.getItem('requestHistory');
+        if (saved) {
+            history = JSON.parse(saved);
+        } else {
+            history = [];
+        }
+        renderHistory();
+    }
+
+    function saveHistory() {
+        localStorage.setItem('requestHistory', JSON.stringify(history));
+    }
+
+    function addToHistory(requestId, waLink, emojis, status = 'pending') {
+        history.unshift({
+            id: requestId,
+            waLink: waLink,
+            emojis: emojis,
+            status: status,
+            timestamp: Date.now()
+        });
+        // Batasi history maksimal 50
+        if (history.length > 50) history.pop();
+        saveHistory();
+        renderHistory();
+    }
+
+    function updateHistoryStatus(requestId, newStatus) {
+        const index = history.findIndex(h => h.id === requestId);
+        if (index !== -1) {
+            history[index].status = newStatus;
+            saveHistory();
+            renderHistory();
+        }
+    }
+
+    function renderHistory() {
+        if (history.length === 0) {
+            historyListDiv.innerHTML = '<div style="color:rgba(255,255,255,0.5); text-align:center; padding:20px;">Belum ada history</div>';
+            return;
+        }
+        historyListDiv.innerHTML = '';
+        history.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            const date = new Date(item.timestamp);
+            const timeStr = date.toLocaleString('id-ID');
+            const statusClass = item.status === 'pending' ? 'pending' : 'done';
+            const statusText = item.status === 'pending' ? 'Menunggu' : 'Selesai';
+            div.innerHTML = `
+                <div class="history-content">
+                    <div class="history-link">🔗 ${escapeHtml(item.waLink.substring(0, 50))}${item.waLink.length > 50 ? '...' : ''}</div>
+                    <div class="history-emoji">😀 ${escapeHtml(item.emojis)}</div>
+                    <div class="history-time">${timeStr}</div>
+                </div>
+                <div class="history-status">
+                    <div class="status-dot ${statusClass}"></div>
+                    <span class="status-text-small" style="color:${statusClass === 'pending' ? '#eab308' : '#22c55e'}">${statusText}</span>
+                </div>
+            `;
+            historyListDiv.appendChild(div);
+        });
+    }
+
+    clearHistoryBtn.addEventListener('click', () => {
+        if (confirm('Hapus semua history?')) {
+            history = [];
+            saveHistory();
+            renderHistory();
+            showToast('History dihapus');
+        }
     });
 
-    function loadRequests() {
-        requestsRef.on('value', (snapshot) => {
-            const container = document.getElementById('requestsContainer');
-            container.innerHTML = '';
-            const data = snapshot.val();
-            if (!data) {
-                container.innerHTML = '<div style="color:white; text-align:center;">✨ Belum ada request</div>';
-                return;
+    // ========== COOLDOWN ==========
+    function updateCooldownUI() {
+        const now = Date.now();
+        const elapsed = now - lastSubmitTime;
+        if (lastSubmitTime === 0 || elapsed >= COOLDOWN_MS) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('disabled');
+            cooldownDiv.innerHTML = '';
+            return true;
+        } else {
+            const remaining = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
+            const minutes = Math.floor(remaining / 60);
+            const seconds = remaining % 60;
+            cooldownDiv.innerHTML = `⏳ Tunggu ${minutes}m ${seconds}s sebelum mengirim lagi`;
+            submitBtn.disabled = true;
+            submitBtn.classList.add('disabled');
+            return false;
+        }
+    }
+
+    setInterval(updateCooldownUI, 1000);
+    updateCooldownUI();
+
+    // ========== FIREBASE REALTIME LISTENER UNTUK UPDATE STATUS ==========
+    requestsRef.on('child_changed', (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.id) {
+            // Update history status jika status berubah jadi done
+            if (data.status === 'done') {
+                updateHistoryStatus(data.id, 'done');
+                showToast(`✅ Request ${data.id.substring(0,8)} sudah selesai!`);
             }
+        }
+    });
 
-            const requestsArray = Object.values(data).filter(r => r.status === 'pending').reverse();
-            if (requestsArray.length === 0) {
-                container.innerHTML = '<div style="color:white; text-align:center;">✅ Semua request sudah diproses</div>';
-            }
+    // ========== KIRIM KE FIREBASE ==========
+    async function sendToFirebase(link, emojis) {
+        const isOpen = checkOperationalStatus();
+        if (!isOpen) {
+            showToast("Admin sedang offline (12:00-21:00). Tidak bisa mengirim request.");
+            return false;
+        }
 
-            requestsArray.forEach(req => {
-                const card = document.createElement('div');
-                card.className = 'request-card pending';
-                card.dataset.id = req.id;
-                card.innerHTML = `
-                    <div class="badge badge-pending">⏳ Pending</div>
-                    <div class="request-info">
-                        <div class="wa-link">🔗 ${escapeHtml(req.waLink)}</div>
-                        <div class="emoji-list">${escapeHtml(req.emojis)}</div>
-                        <div class="timestamp">📅 ${new Date(req.timestamp).toLocaleString('id-ID')}</div>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="btn-approve" data-id="${req.id}" data-link="${escapeHtml(req.waLink)}" data-emoji="${escapeHtml(req.emojis)}">✅ Kerjakan</button>
-                        <button class="btn-reject" data-id="${req.id}">❌ Tolak</button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+        const newRequestRef = requestsRef.push();
+        const requestId = newRequestRef.key;
+        const requestData = {
+            id: requestId,
+            waLink: link,
+            emojis: emojis,
+            timestamp: Date.now(),
+            status: 'pending'
+        };
+        
+        try {
+            await newRequestRef.set(requestData);
+            lastSubmitTime = Date.now();
+            localStorage.setItem('lastSubmitTime', lastSubmitTime);
+            updateCooldownUI();
+            
+            // Tambah ke history dengan status pending
+            addToHistory(requestId, link, emojis, 'pending');
+            
+            showToast("✅ Request terkirim! Admin akan memproses.");
+            return true;
+        } catch (err) {
+            console.error(err);
+            showToast("❌ Gagal mengirim, coba lagi.");
+            return false;
+        }
+    }
 
-            // Event listener tombol
-            document.querySelectorAll('.btn-approve').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const id = btn.dataset.id;
-                    const link = btn.dataset.link;
-                    const emoji = btn.dataset.emoji;
-                    alert(`Proses request:\nLink: ${link}\nEmoji: ${emoji}\n\nSetelah selesai, request akan ditandai done.`);
-                    await requestsRef.child(id).update({ status: 'done' });
-                    showNotif('Request ditandai selesai');
-                });
-            });
+    // ========== LOADING + KONFIRMASI ==========
+    submitBtn.addEventListener('click', async () => {
+        const waLink = waLinkInput.value.trim();
+        const emojis = emojiInput.value.trim();
 
-            document.querySelectorAll('.btn-reject').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const id = btn.dataset.id;
-                    if (confirm('Tolak request ini?')) {
-                        await requestsRef.child(id).remove();
-                        showNotif('Request ditolak dan dihapus');
-                    }
-                });
-            });
-        });
+        if (!waLink || !emojis) {
+            showToast("Harap isi link WhatsApp dan emoji!");
+            return;
+        }
+
+        // Cek cooldown
+        if (!updateCooldownUI()) return;
+
+        // Cek jam operasional
+        if (!checkOperationalStatus()) {
+            showToast("Admin offline, kirim hanya jam 12:00 - 21:00");
+            return;
+        }
+
+        // Tampilkan loading 5 detik
+        showLoading(true);
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        showLoading(false);
+
+        // Tampilkan modal konfirmasi
+        pendingData = { link: waLink, emojis: emojis };
+        previewDiv.innerHTML = `
+            <strong>🔗 Link:</strong> ${escapeHtml(waLink)}<br><br>
+            <strong>😀 Emoji:</strong> ${escapeHtml(emojis)}
+        `;
+        modal.classList.add('active');
+    });
+
+    confirmBtn.addEventListener('click', async () => {
+        if (!pendingData) return;
+        modal.classList.remove('active');
+        await sendToFirebase(pendingData.link, pendingData.emojis);
+        waLinkInput.value = '';
+        emojiInput.value = '';
+        pendingData = null;
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        pendingData = null;
+        showToast("✏️ Silakan perbaiki data.");
+    });
+
+    function showLoading(show) {
+        if (show) loadingOverlay.classList.add('active');
+        else loadingOverlay.classList.remove('active');
     }
 
     function escapeHtml(str) {
@@ -302,22 +793,16 @@
         });
     }
 
-    function showNotif(msg) {
-        const div = document.createElement('div');
-        div.innerText = msg;
-        div.style.position = 'fixed';
-        div.style.bottom = '20px';
-        div.style.right = '20px';
-        div.style.background = '#8b5cf6';
-        div.style.padding = '12px 20px';
-        div.style.borderRadius = '30px';
-        div.style.color = 'white';
-        div.style.zIndex = '999';
-        document.body.appendChild(div);
-        setTimeout(() => div.remove(), 2000);
+    function showToast(msg) {
+        let toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
     }
 
-    checkAuth();
+    // Inisialisasi
+    loadHistory();
 </script>
 </body>
 </html>
