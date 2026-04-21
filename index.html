@@ -1,173 +1,557 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Channel React</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Channel React | Kirim Request</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-<style>
-body {
-  margin:0;
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg,#0f172a,#1e293b);
-  color:white;
-}
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
-.container {
-  max-width: 500px;
-  margin: 50px auto;
-  padding: 20px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
-}
+        .container {
+            max-width: 550px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px 28px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
 
-h1 { text-align:center; }
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
 
-input {
-  width:100%;
-  padding:12px;
-  margin:10px 0;
-  border:none;
-  border-radius:8px;
-}
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #a855f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
 
-button {
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:8px;
-  background:#22c55e;
-  color:white;
-  cursor:pointer;
-}
+        .header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-top: 8px;
+        }
 
-.status {
-  text-align:center;
-  margin-bottom:10px;
-}
+        /* Status Admin */
+        .admin-status {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 60px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
 
-.online { color:#22c55e; }
-.offline { color:#ef4444; }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.history {
-  margin-top:20px;
-  max-height:150px;
-  overflow:auto;
-  font-size:12px;
-}
-</style>
+        .led {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: gray;
+            box-shadow: 0 0 5px currentColor;
+            transition: all 0.2s;
+        }
+
+        .led.online {
+            background: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
+        }
+
+        .led.offline {
+            background: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+        }
+
+        .status-text {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .operational-hours {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            background: rgba(0,0,0,0.3);
+            padding: 5px 12px;
+            border-radius: 30px;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: white;
+            font-size: 15px;
+            font-family: 'Poppins', monospace;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #a855f7;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            border: none;
+            border-radius: 40px;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:active {
+            transform: scale(0.97);
+        }
+
+        .btn-submit.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Modal Konfirmasi */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #1e1b2e;
+            border-radius: 28px;
+            padding: 28px;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 16px;
+            color: #c084fc;
+        }
+
+        .data-preview {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 20px;
+            text-align: left;
+            margin: 15px 0;
+            word-break: break-all;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-confirm {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Cooldown & Toast */
+        .cooldown-info {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 13px;
+            color: #fbbf24;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e1b2e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-size: 14px;
+            z-index: 1100;
+            border-left: 4px solid #a855f7;
+            box-shadow: 0 5px 20px black;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            visibility: hidden;
+        }
+
+        .loading-overlay.active {
+            visibility: visible;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(168,85,247,0.3);
+            border-top: 4px solid #a855f7;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-
 <body>
+<div class="container" id="app">
+    <div class="header">
+        <h1>📡 Channel React</h1>
+        <p>Kirim request emoji ke channel WhatsApp</p>
+    </div>
 
-<div class="container">
-<h1>Channel React</h1>
+    <div class="admin-status">
+        <div class="status-indicator">
+            <div class="led" id="statusLed"></div>
+            <span class="status-text" id="statusText">Memeriksa...</span>
+        </div>
+        <div class="operational-hours" id="operationalText">⏰ 12:00 - 16:00 WIB</div>
+    </div>
 
-<div id="status" class="status"></div>
+    <div class="form-group">
+        <label>🔗 Link Channel WhatsApp</label>
+        <input type="url" id="waLink" placeholder="https://chat.whatsapp.com/..." autocomplete="off">
+    </div>
 
-<input id="link" placeholder="Link Channel WhatsApp">
-<input id="emoji" placeholder="Emoji (pisahkan koma)">
-<button onclick="kirim()">Kirim</button>
+    <div class="form-group">
+        <label>😀 Emoji (pisahkan dengan koma)</label>
+        <textarea id="emojiList" placeholder="Contoh: 😊, 🎉, ❤️, 🔥" rows="3"></textarea>
+    </div>
 
-<div id="loading"></div>
-<div id="confirm"></div>
-
-<div class="history">
-<h3>History Kamu</h3>
-<div id="history"></div>
+    <button class="btn-submit" id="submitBtn">📨 Kirim Request</button>
+    <div class="cooldown-info" id="cooldownInfo"></div>
 </div>
 
+<!-- Modal Konfirmasi -->
+<div class="modal" id="confirmModal">
+    <div class="modal-content">
+        <h3>✅ Apakah sudah benar?</h3>
+        <div class="data-preview" id="previewData"></div>
+        <div class="modal-buttons">
+            <button class="btn-cancel" id="cancelBtn">Ulangi</button>
+            <button class="btn-confirm" id="confirmBtn">Ya, Kirim</button>
+        </div>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <span style="color:white; margin-left: 15px;">Mengirim...</span>
 </div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAJodnkdF_FiJ3bdUE2Jhpd91W6AnZ5KbI",
-  authDomain: "chan-react.firebaseapp.com",
-  databaseURL: "https://chan-react-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "chan-react",
-};
+    // ========== FIREBASE ==========
+    const firebaseConfig = {
+        apiKey: "AIzaSyAJodnkdF_FiJ3bdUE2Jhpd91W6AnZ5KbI",
+        authDomain: "chan-react.firebaseapp.com",
+        databaseURL: "https://chan-react-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "chan-react",
+        storageBucket: "chan-react.firebasestorage.app",
+        messagingSenderId: "479832015269",
+        appId: "1:479832015269:web:c0aba3d54712a8465ca84c",
+        measurementId: "G-X5LLJH01KF"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const requestsRef = database.ref('requests');
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+    // ========== GLOBAL ==========
+    let lastSubmitTime = 0;
+    const COOLDOWN_MS = 5 * 60 * 1000; // 5 menit
+    let pendingData = null;
 
-// STATUS ADMIN
-function cekStatus(){
-  let jam = new Date().getHours();
-  let el = document.getElementById("status");
+    // DOM elements
+    const waLinkInput = document.getElementById('waLink');
+    const emojiInput = document.getElementById('emojiList');
+    const submitBtn = document.getElementById('submitBtn');
+    const cooldownDiv = document.getElementById('cooldownInfo');
+    const modal = document.getElementById('confirmModal');
+    const previewDiv = document.getElementById('previewData');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const statusLed = document.getElementById('statusLed');
+    const statusTextSpan = document.getElementById('statusText');
+    const operationalSpan = document.getElementById('operationalText');
 
-  if(jam >= 12 && jam < 16){
-    el.innerHTML = "<span class='online'>🟢 Admin Online</span>";
-  } else {
-    el.innerHTML = "<span class='offline'>🔴 Admin Offline</span>";
-  }
-}
-setInterval(cekStatus,1000);
+    // ========== JAM OPERASIONAL (Real-time berdasarkan waktu user) ==========
+    function checkOperationalStatus() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const currentTime = hours + minutes / 60;
+        const isOpen = (currentTime >= 12.0 && currentTime < 16.0);
+        
+        if (isOpen) {
+            statusLed.className = 'led online';
+            statusTextSpan.innerHTML = 'Online 🟢';
+            statusTextSpan.style.color = '#86efac';
+            return true;
+        } else {
+            statusLed.className = 'led offline';
+            statusTextSpan.innerHTML = 'Offline 🔴';
+            statusTextSpan.style.color = '#fca5a5';
+            return false;
+        }
+    }
 
-// HISTORY LOCAL
-function loadHistory(){
-  let data = JSON.parse(localStorage.getItem("history") || "[]");
-  let el = document.getElementById("history");
-  el.innerHTML = data.map(d => `
-    <div>📌 ${d.link} | ${d.emoji}</div>
-  `).join("");
-}
-loadHistory();
+    // Update setiap menit
+    setInterval(checkOperationalStatus, 60000);
+    checkOperationalStatus();
 
-// KIRIM
-function kirim(){
-  let last = localStorage.getItem("lastSend");
-  let now = Date.now();
+    // ========== COOLDOWN CHECK ==========
+    function updateCooldownUI() {
+        const now = Date.now();
+        const elapsed = now - lastSubmitTime;
+        if (lastSubmitTime === 0 || elapsed >= COOLDOWN_MS) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('disabled');
+            cooldownDiv.innerHTML = '';
+            return true;
+        } else {
+            const remaining = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
+            const minutes = Math.floor(remaining / 60);
+            const seconds = remaining % 60;
+            cooldownDiv.innerHTML = `⏳ Tunggu ${minutes}m ${seconds}s sebelum mengirim lagi`;
+            submitBtn.disabled = true;
+            submitBtn.classList.add('disabled');
+            return false;
+        }
+    }
 
-  if(last && now - last < 300000){
-    alert("Tunggu 5 menit!");
-    return;
-  }
+    setInterval(updateCooldownUI, 1000);
 
-  let link = document.getElementById("link").value;
-  let emoji = document.getElementById("emoji").value;
+    // ========== LOADING SIMULASI 5 DETIK ==========
+    function showLoading(show) {
+        if (show) {
+            loadingOverlay.classList.add('active');
+        } else {
+            loadingOverlay.classList.remove('active');
+        }
+    }
 
-  document.getElementById("loading").innerHTML = "Sending...";
+    // ========== TAMPILKAN MODAL KONFIRMASI ==========
+    function showConfirmModal(link, emojis) {
+        pendingData = { link, emojis };
+        previewDiv.innerHTML = `
+            <strong>🔗 Link:</strong> ${escapeHtml(link)}<br><br>
+            <strong>😀 Emoji:</strong> ${escapeHtml(emojis)}
+        `;
+        modal.classList.add('active');
+    }
 
-  setTimeout(()=>{
-    document.getElementById("loading").innerHTML = "";
+    // ========== KIRIM KE FIREBASE ==========
+    async function sendToFirebase(link, emojis) {
+        const isOpen = checkOperationalStatus();
+        if (!isOpen) {
+            alert("Admin sedang offline (12:00-16:00). Tidak bisa mengirim request.");
+            return false;
+        }
 
-    document.getElementById("confirm").innerHTML = `
-      <p>Apakah sudah benar?</p>
-      <p>${link}</p>
-      <p>${emoji}</p>
-      <button onclick="submitData('${link}','${emoji}')">Ya, Kirim</button>
-      <button onclick="ulang()">Ulangi</button>
-    `;
-  },5000);
-}
+        const newRequestRef = requestsRef.push();
+        const requestData = {
+            id: newRequestRef.key,
+            waLink: link,
+            emojis: emojis,
+            timestamp: Date.now(),
+            status: 'pending', // pending, done, rejected
+            userIP: "anonymous"
+        };
+        
+        try {
+            await newRequestRef.set(requestData);
+            lastSubmitTime = Date.now();
+            localStorage.setItem('lastSubmitTime', lastSubmitTime);
+            updateCooldownUI();
+            showToast("✅ Request terkirim! Admin akan memproses.");
+            return true;
+        } catch (err) {
+            console.error(err);
+            showToast("❌ Gagal mengirim, coba lagi.");
+            return false;
+        }
+    }
 
-function ulang(){
-  document.getElementById("confirm").innerHTML="";
-}
+    // ========== PROSES SUBMIT DENGAN LOADING + KONFIRMASI ==========
+    submitBtn.addEventListener('click', async () => {
+        const waLink = waLinkInput.value.trim();
+        const emojis = emojiInput.value.trim();
 
-function submitData(link,emoji){
-  let id = Date.now();
+        if (!waLink || !emojis) {
+            showToast("Harap isi link WhatsApp dan emoji!");
+            return;
+        }
 
-  db.ref("requests/"+id).set({
-    link, emoji,
-    status:"pending",
-    time:new Date().toLocaleString()
-  });
+        if (!waLink.startsWith('https://chat.whatsapp.com/') && !waLink.startsWith('https://wa.me/')) {
+            showToast("Masukkan link WhatsApp yang valid (chat.whatsapp.com)");
+            return;
+        }
 
-  // simpan history
-  let hist = JSON.parse(localStorage.getItem("history")||"[]");
-  hist.push({link,emoji});
-  localStorage.setItem("history",JSON.stringify(hist));
+        // Cek cooldown
+        if (!updateCooldownUI()) return;
 
-  localStorage.setItem("lastSend",Date.now());
+        // Cek jam operasional
+        if (!checkOperationalStatus()) {
+            showToast("Admin offline, kirim hanya jam 12:00 - 16:00");
+            return;
+        }
 
-  loadHistory();
-  document.getElementById("confirm").innerHTML="Berhasil!";
-}
+        // Tampilkan loading 5 detik
+        showLoading(true);
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        showLoading(false);
+
+        // Tampilkan modal konfirmasi
+        showConfirmModal(waLink, emojis);
+    });
+
+    confirmBtn.addEventListener('click', async () => {
+        if (!pendingData) return;
+        modal.classList.remove('active');
+        
+        // Kirim ke Firebase
+        await sendToFirebase(pendingData.link, pendingData.emojis);
+        
+        // Kosongkan form
+        waLinkInput.value = '';
+        emojiInput.value = '';
+        pendingData = null;
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        pendingData = null;
+        showToast("✏️ Silakan perbaiki data.");
+    });
+
+    // Helper
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    function showToast(msg) {
+        let toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Load cooldown dari localStorage
+    const saved = localStorage.getItem('lastSubmitTime');
+    if (saved) lastSubmitTime = parseInt(saved);
+    updateCooldownUI();
 </script>
-
 </body>
 </html>
