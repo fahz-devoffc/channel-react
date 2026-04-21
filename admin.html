@@ -1,154 +1,323 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Admin Panel</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | Channel React</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+        body {
+            background: #0a0c15;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            padding: 30px 20px;
+        }
 
-<style>
-body {
-  font-family: 'Segoe UI';
-  background:#020617;
-  color:white;
-  margin:0;
-}
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-.header {
-  padding:15px;
-  background:#0f172a;
-  text-align:center;
-}
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: #1a1d2e;
+            padding: 35px;
+            border-radius: 28px;
+            text-align: center;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
+        }
 
-.card {
-  background:#1e293b;
-  margin:10px;
-  padding:10px;
-  border-radius:10px;
-}
+        .login-container input {
+            width: 100%;
+            padding: 14px;
+            margin: 15px 0;
+            background: #0f111f;
+            border: 1px solid #2d2f42;
+            border-radius: 40px;
+            color: white;
+            font-size: 16px;
+        }
 
-button {
-  margin:5px;
-  padding:8px;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
-}
+        .login-container button {
+            background: #8b5cf6;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-.ok { background:#22c55e; }
-.no { background:#ef4444; }
+        .admin-panel {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: none;
+        }
 
-.log {
-  margin:10px;
-  padding:10px;
-  background:#111827;
-  border-radius:10px;
-  max-height:200px;
-  overflow:auto;
-  font-size:12px;
-}
-</style>
+        .header-admin {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: #1a1d2e;
+            padding: 20px 25px;
+            border-radius: 28px;
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            padding: 8px 20px;
+            border-radius: 40px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .requests-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .request-card {
+            background: #14182b;
+            border-radius: 24px;
+            padding: 20px 25px;
+            border-left: 6px solid #8b5cf6;
+            transition: 0.1s;
+        }
+
+        .request-card.pending {
+            border-left-color: #f59e0b;
+        }
+        .request-card.done {
+            opacity: 0.7;
+            border-left-color: #22c55e;
+        }
+        .request-card.rejected {
+            display: none;
+        }
+
+        .request-info {
+            margin-bottom: 15px;
+        }
+
+        .wa-link {
+            font-size: 16px;
+            word-break: break-all;
+            background: #0f111f;
+            padding: 10px 14px;
+            border-radius: 18px;
+            font-family: monospace;
+        }
+
+        .emoji-list {
+            font-size: 24px;
+            letter-spacing: 5px;
+            margin-top: 10px;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #7e84a3;
+            margin-top: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 18px;
+        }
+
+        .btn-approve {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .badge-pending {
+            background: #f59e0b20;
+            color: #fbbf24;
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="header">
-<h2>Admin Panel</h2>
+<div class="login-container" id="loginBox">
+    <h2 style="color:white; margin-bottom: 15px;">🔐 Admin Access</h2>
+    <input type="password" id="tokenInput" placeholder="Masukkan Token">
+    <button id="loginBtn">Masuk</button>
+    <p style="color:#aaa; margin-top: 15px; font-size:12px">Token rahasia</p>
 </div>
 
-<div id="login" style="text-align:center;margin-top:50px;">
-<input type="password" id="token" placeholder="Token">
-<button onclick="login()">Masuk</button>
-</div>
-
-<div id="panel" style="display:none;">
-<h3 style="text-align:center;">Permintaan</h3>
-<div id="data"></div>
-
-<div class="log">
-<h3>Activity Log</h3>
-<div id="log"></div>
-</div>
+<div class="admin-panel" id="adminPanel">
+    <div class="header-admin">
+        <h2 style="color:white;">📋 Request Masuk</h2>
+        <button class="logout-btn" id="logoutBtn">Keluar</button>
+    </div>
+    <div class="requests-grid" id="requestsContainer">
+        <div style="color:white; text-align:center;">Loading request...</div>
+    </div>
 </div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAJodnkdF_FiJ3bdUE2Jhpd91W6AnZ5KbI",
-  authDomain: "chan-react.firebaseapp.com",
-  databaseURL: "https://chan-react-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "chan-react",
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyAJodnkdF_FiJ3bdUE2Jhpd91W6AnZ5KbI",
+        authDomain: "chan-react.firebaseapp.com",
+        databaseURL: "https://chan-react-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "chan-react",
+        storageBucket: "chan-react.firebasestorage.app",
+        messagingSenderId: "479832015269",
+        appId: "1:479832015269:web:c0aba3d54712a8465ca84c",
+        measurementId: "G-X5LLJH01KF"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const requestsRef = database.ref('requests');
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+    let currentUser = null;
 
-function login(){
-  let token = document.getElementById("token").value;
+    function checkAuth() {
+        const token = localStorage.getItem('adminToken');
+        if (token === 'Admin123#') {
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            loadRequests();
+        } else {
+            document.getElementById('loginBox').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+            localStorage.removeItem('adminToken');
+        }
+    }
 
-  if(token === "Admin123#"){
-    document.getElementById("login").style.display="none";
-    document.getElementById("panel").style.display="block";
-    loadData();
-    loadLog();
-  } else {
-    alert("Token salah!");
-  }
-}
-
-function loadData(){
-  db.ref("requests").on("value",snap=>{
-    let el = document.getElementById("data");
-    el.innerHTML="";
-
-    snap.forEach(c=>{
-      let v = c.val();
-      let id = c.key;
-
-      if(v.status === "pending"){
-        el.innerHTML += `
-        <div class="card">
-          <p>${v.link}</p>
-          <p>${v.emoji}</p>
-          <button class="ok" onclick="ok('${id}')">Kerjakan</button>
-          <button class="no" onclick="tolak('${id}')">Tolak</button>
-        </div>
-        `;
-      }
+    document.getElementById('loginBtn').addEventListener('click', () => {
+        const token = document.getElementById('tokenInput').value;
+        if (token === 'Admin123#') {
+            localStorage.setItem('adminToken', token);
+            checkAuth();
+        } else {
+            alert('Token salah!');
+        }
     });
-  });
-}
 
-function ok(id){
-  db.ref("requests/"+id).update({status:"done"});
-  tambahLog("Dikerjakan: "+id);
-}
-
-function tolak(id){
-  db.ref("requests/"+id).remove();
-  tambahLog("Ditolak: "+id);
-}
-
-function tambahLog(text){
-  let logRef = db.ref("logs").push();
-  logRef.set({
-    text:text,
-    time:new Date().toLocaleString()
-  });
-}
-
-function loadLog(){
-  db.ref("logs").on("value",snap=>{
-    let el = document.getElementById("log");
-    el.innerHTML="";
-
-    snap.forEach(c=>{
-      let v = c.val();
-      el.innerHTML += `<div>📌 ${v.text} (${v.time})</div>`;
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('adminToken');
+        checkAuth();
     });
-  });
-}
+
+    function loadRequests() {
+        requestsRef.on('value', (snapshot) => {
+            const container = document.getElementById('requestsContainer');
+            container.innerHTML = '';
+            const data = snapshot.val();
+            if (!data) {
+                container.innerHTML = '<div style="color:white; text-align:center;">✨ Belum ada request</div>';
+                return;
+            }
+
+            const requestsArray = Object.values(data).filter(r => r.status === 'pending').reverse();
+            if (requestsArray.length === 0) {
+                container.innerHTML = '<div style="color:white; text-align:center;">✅ Semua request sudah diproses</div>';
+            }
+
+            requestsArray.forEach(req => {
+                const card = document.createElement('div');
+                card.className = 'request-card pending';
+                card.dataset.id = req.id;
+                card.innerHTML = `
+                    <div class="badge badge-pending">⏳ Pending</div>
+                    <div class="request-info">
+                        <div class="wa-link">🔗 ${escapeHtml(req.waLink)}</div>
+                        <div class="emoji-list">${escapeHtml(req.emojis)}</div>
+                        <div class="timestamp">📅 ${new Date(req.timestamp).toLocaleString('id-ID')}</div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn-approve" data-id="${req.id}" data-link="${escapeHtml(req.waLink)}" data-emoji="${escapeHtml(req.emojis)}">✅ Kerjakan</button>
+                        <button class="btn-reject" data-id="${req.id}">❌ Tolak</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Event listener tombol
+            document.querySelectorAll('.btn-approve').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    const link = btn.dataset.link;
+                    const emoji = btn.dataset.emoji;
+                    alert(`Proses request:\nLink: ${link}\nEmoji: ${emoji}\n\nSetelah selesai, request akan ditandai done.`);
+                    await requestsRef.child(id).update({ status: 'done' });
+                    showNotif('Request ditandai selesai');
+                });
+            });
+
+            document.querySelectorAll('.btn-reject').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    if (confirm('Tolak request ini?')) {
+                        await requestsRef.child(id).remove();
+                        showNotif('Request ditolak dan dihapus');
+                    }
+                });
+            });
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function showNotif(msg) {
+        const div = document.createElement('div');
+        div.innerText = msg;
+        div.style.position = 'fixed';
+        div.style.bottom = '20px';
+        div.style.right = '20px';
+        div.style.background = '#8b5cf6';
+        div.style.padding = '12px 20px';
+        div.style.borderRadius = '30px';
+        div.style.color = 'white';
+        div.style.zIndex = '999';
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 2000);
+    }
+
+    checkAuth();
 </script>
-
 </body>
 </html>
